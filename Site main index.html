@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hudson Bombard — CS Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0a0f;
+      --surface: #130f18;
+      --border: #2a1a2e;
+      --accent: #c0192f;
+      --accent2: #8b2fc9;
+      --text: #d6cede;
+      --muted: #6b5575;
+      --white: #f5f0f8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.35;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 2.5rem;
+      background: rgba(10, 14, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 8rem 2.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.3;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(192,25,47,0.15) 0%, rgba(139,47,201,0.08) 60%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--accent);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s 0.2s forwards;
+    }
+
+    .hero h1 {
+      font-size: clamp(3.5rem, 9vw, 8rem);
+      font-weight: 800;
+      line-height: 0.95;
+      color: var(--white);
+      letter-spacing: -0.03em;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.4s forwards;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero-sub {
+      margin-top: 2rem;
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 500px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.6s forwards;
+    }
+
+    .hero-cta {
+      margin-top: 3rem;
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.8s forwards;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.85rem 2rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+      border: 2px solid var(--accent);
+    }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    /* ── SECTION SHARED ── */
+    section {
+      padding: 6rem 2.5rem;
+      position: relative;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+    }
+
+    /* ── ABOUT ── */
+    #about { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .about-text p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skill-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+
+    .skill-card:nth-child(even)::before {
+      background: var(--accent2);
+    }
+    .skill-card:nth-child(even):hover { border-color: var(--accent2); }
+
+    .edu-card:nth-child(even):hover { border-color: var(--accent2); }
+    .edu-card:nth-child(even) .edu-degree { color: var(--accent2); }
+
+    .skill-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .skill-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.75rem;
+    }
+
+    .skill-tags {
+      display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      padding: 0.3rem 0.7rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--muted);
+    }
+
+    /* ── EXPERIENCE ── */
+    #experience { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    .timeline { position: relative; padding-left: 2rem; }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent2), transparent);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 3rem;
+      padding-left: 2rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 0.5rem;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+      transform: translateX(-4px);
+    }
+
+    .timeline-date {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-item h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-org {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .timeline-item ul {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+
+    .timeline-item ul li {
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.6;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+
+    .timeline-item ul li::before {
+      content: '▹';
+      position: absolute; left: 0;
+      color: var(--accent);
+    }
+
+    /* ── EDUCATION ── */
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .edu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .edu-card:hover { border-color: var(--accent); }
+
+    .edu-degree {
+      font-size: 0.75rem;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .edu-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+
+    .edu-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ── CERTS ── */
+    #certifications { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    .certs-list {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+    }
+
+    .cert-badge {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      transition: all 0.2s;
+    }
+
+    .cert-badge:hover { border-color: var(--accent2); }
+
+    .cert-badge-icon {
+      font-size: 1.5rem;
+    }
+
+    .cert-badge-text {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    /* ── CONTACT ── */
+    .contact-inner {
+      max-width: 640px;
+    }
+
+    .contact-inner p {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .contact-links {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+    }
+
+    .contact-link {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .contact-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2rem 2.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    footer p {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── PROJECTS ── */
+    #projects { background: var(--bg); }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.25s;
+    }
+    .project-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+
+    .project-header {
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .project-header-left { flex: 1; }
+
+    .project-title-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .project-title-row h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--white);
+    }
+
+    .project-badge {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      background: rgba(192,25,47,0.12);
+      border: 1px solid rgba(192,25,47,0.35);
+      color: var(--accent);
+    }
+
+    .project-desc {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .project-tech {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+    }
+
+    .project-body {
+      padding: 1.75rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .project-section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .project-body ul {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.45rem;
+    }
+
+    .project-body ul li {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      padding-left: 1.2rem;
+      position: relative;
+    }
+
+    .project-body ul li::before {
+      content: '▹';
+      position: absolute; left: 0;
+      color: var(--accent);
+    }
+
+    .project-footer {
+      padding: 1.25rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .team-grid {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+    }
+
+    .team-member {
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+
+    .team-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'Space Mono', monospace;
+      flex-shrink: 0;
+      border: 1px solid var(--accent);
+    }
+
+    .team-member:nth-child(2) .team-avatar { color: var(--accent2); border-color: var(--accent2); }
+    .team-member:nth-child(3) .team-avatar { color: #e07b9a; border-color: #e07b9a; }
+
+    .team-info { }
+    .team-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+    .team-role {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .card-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .card-type {
+      display: flex; align-items: center; gap: 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+    }
+
+    .card-type-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; }
+      .hero { padding: 7rem 1.25rem 3rem; }
+      section { padding: 4rem 1.25rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">HB.dev</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="container" style="position:relative;">
+    <p class="hero-tag">// Computer Science Student &amp; Robotics Enthusiast</p>
+    <h1>Hudson<br/><span>Bombard</span></h1>
+    <p class="hero-sub">Building at the intersection of software and physical systems. Python, Java, FIRST Robotics — and always learning more.</p>
+    <div class="hero-cta">
+      <a href="#experience" class="btn btn-primary">View Experience</a>
+      <a href="#contact" class="btn btn-secondary">Get in Touch</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <p class="section-label reveal">// Who I Am</p>
+    <h2 class="section-title reveal">About Me</h2>
+    <div class="about-grid">
+      <div class="about-text reveal">
+        <p>I'm a Computer Science student based in Massachusetts, currently studying at Mount Wachusett Community College after starting at Fitchburg State University. I'm passionate about robotics, problem solving, and writing clean, purposeful code.</p>
+        <p>My hands-on FIRST Robotics experience taught me how to design, build, and debug under pressure — skills that translate directly to software engineering. I bring the same discipline from my decade of Taekwondo to everything I do.</p>
+        <p>I'm seeking internships or co-ops where I can apply my Python and Java skills, contribute to real-world projects, and grow as a developer.</p>
+      </div>
+      <div class="about-stats reveal">
+        <div class="stat-card">
+          <div class="stat-number">2+</div>
+          <div class="stat-label">Years FIRST Robotics</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">10+</div>
+          <div class="stat-label">Years Taekwondo</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">2</div>
+          <div class="stat-label">Core Languages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">3</div>
+          <div class="stat-label">Certifications</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="container">
+    <p class="section-label reveal">// What I Work With</p>
+    <h2 class="section-title reveal">Technical Skills</h2>
+    <div class="skills-grid">
+      <div class="skill-card reveal">
+        <div class="skill-icon">🐍</div>
+        <h3>Programming Languages</h3>
+        <div class="skill-tags">
+          <span class="tag">Python</span>
+          <span class="tag">Java</span>
+          <span class="tag">C# (learning)</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">🤖</div>
+        <h3>Robotics</h3>
+        <div class="skill-tags">
+          <span class="tag">FIRST Robotics</span>
+          <span class="tag">Mechanical Assembly</span>
+          <span class="tag">Iterative Design</span>
+          <span class="tag">Troubleshooting</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">🖥️</div>
+        <h3>Systems &amp; Tools</h3>
+        <div class="skill-tags">
+          <span class="tag">Windows</span>
+          <span class="tag">Remote Desktop</span>
+          <span class="tag">Software Troubleshooting</span>
+        </div>
+      </div>
+      <div class="skill-card reveal">
+        <div class="skill-icon">🧩</div>
+        <h3>Core Concepts</h3>
+        <div class="skill-tags">
+          <span class="tag">System Analysis</span>
+          <span class="tag">Quality Inspection</span>
+          <span class="tag">Team Collaboration</span>
+          <span class="tag">Problem Solving</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <p class="section-label reveal">// What I've Built</p>
+    <h2 class="section-title reveal">Projects</h2>
+
+    <div class="project-card reveal">
+      <div class="project-header">
+        <div class="project-header-left">
+          <div class="project-title-row">
+            <h3>Heat Street</h3>
+            <span class="project-badge">Group Project · Java</span>
+          </div>
+          <p class="project-desc">
+            A competitive card game where 2–4 players are rival thieves racing to steal a Loot card from the center of a 7×7 board and escape. Players scatter traps to block opponents while using Utility cards to clear their own path. A Heat Meter tracks how "hot" each player is — reach 5/5 and you're caught, losing your loot and getting sent back to start.
+          </p>
+          <div class="project-tech">
+            <span class="tag">Java</span>
+            <span class="tag">OOP</span>
+            <span class="tag">Game Design</span>
+            <span class="tag">Playtesting</span>
+            <span class="tag">Excel / Spreadsheet Design</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="project-body">
+        <div>
+          <p class="project-section-label">Card Deck Simulator</p>
+          <ul>
+            <li>Built a Java CLI simulator to draw from all three decks — Loot, Utility, and Trap — without needing physical cards</li>
+            <li>Implemented a deck-depletion model: cards are removed on draw and the deck auto-refills when empty, mirroring real gameplay</li>
+            <li>Used the simulator for rapid playtesting to validate card balance and catch broken mechanics early</li>
+            <li>Handles input validation and gracefully loops until the player quits</li>
+          </ul>
+        </div>
+        <div>
+          <p class="project-section-label">Card Types</p>
+          <div class="card-type-grid">
+            <div class="card-type">
+              <div class="card-type-dot" style="background:#ffd700;"></div> Loot
+            </div>
+            <div class="card-type">
+              <div class="card-type-dot" style="background:#8b2fc9;"></div> Utility
+            </div>
+            <div class="card-type">
+              <div class="card-type-dot" style="background:#c0192f;"></div> Trap
+            </div>
+            <div class="card-type">
+              <div class="card-type-dot" style="background:#a78bfa;"></div> Instant
+            </div>
+          </div>
+          <br/>
+          <p class="project-section-label">My Contributions</p>
+          <ul>
+            <li>Designed card mechanics and effects for all four card types</li>
+            <li>Built the <strong style="color:var(--white)">CardDeckSimulator.java</strong> tool for digital playtesting</li>
+            <li>Iterated on balance based on team feedback and playtesting sessions</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="project-footer">
+        <p class="project-section-label" style="margin-bottom:1rem;">Team</p>
+        <div class="team-grid">
+          <div class="team-member">
+            <div class="team-avatar">HB</div>
+            <div class="team-info">
+              <div class="team-name">Hudson Bombard</div>
+              <div class="team-role">Card mechanics &amp; Deck Simulator</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-avatar">RS</div>
+            <div class="team-info">
+              <div class="team-name">Ronald Schnieder</div>
+              <div class="team-role">Spreadsheet development &amp; graphic design</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="team-avatar">CM</div>
+            <div class="team-info">
+              <div class="team-name">Chase Miele</div>
+              <div class="team-role">QA &amp; balance testing</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="container">
+    <p class="section-label reveal">// Where I've Been</p>
+    <h2 class="section-title reveal">Experience</h2>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-date">PRESENT</div>
+        <h3>Fulfillment Specialist / Closing Expert</h3>
+        <div class="timeline-org">Target — Leominster, MA</div>
+        <ul>
+          <li>Based in the Fulfillment department while regularly flexing into multiple store roles, demonstrating adaptability and a team-first mindset</li>
+          <li>Accurately picked, packed, and prepared customer orders in a fast-paced retail environment</li>
+          <li>Operated pallet jacks and material-handling equipment following safety and PPE standards</li>
+          <li>Assisted with closing operations, merchandising, and inventory organization across departments</li>
+          <li>Maintained high quality-control standards to ensure order accuracy</li>
+        </ul>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-date">NOV 2021 – MAY 2023</div>
+        <h3>Student Volunteer – FIRST Robotics Team</h3>
+        <div class="timeline-org">Clinton, MA</div>
+        <ul>
+          <li>Collaborated with a student team to design, build, and test a competitive robot for FIRST Robotics competitions</li>
+          <li>Assisted with mechanical assembly, troubleshooting, and iterative design improvements</li>
+          <li>Developed problem-solving, teamwork, and time-management skills under competition deadlines</li>
+        </ul>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-date">SEP 2019 – JUN 2021</div>
+        <h3>Treasurer, Student Council</h3>
+        <div class="timeline-org">Clinton High School — Clinton, MA</div>
+        <ul>
+          <li>Managed budgeting and financial records for all student council activities</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="container">
+    <p class="section-label reveal">// Academic Background</p>
+    <h2 class="section-title reveal">Education</h2>
+    <div class="edu-grid">
+      <div class="edu-card reveal">
+        <div class="edu-degree">B.S. Computer Science · Current</div>
+        <h3>Mount Wachusett Community College</h3>
+        <p>Gardner, MA · January 2026 – Present</p>
+      </div>
+      <div class="edu-card reveal">
+        <div class="edu-degree">B.S. Computer Science · Previous</div>
+        <h3>Fitchburg State University</h3>
+        <p>Fitchburg, MA · September 2024 – December 2025</p>
+      </div>
+      <div class="edu-card reveal">
+        <div class="edu-degree">High School Diploma</div>
+        <h3>Clinton High School</h3>
+        <p>Clinton, MA · September 2019 – June 2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section id="certifications">
+  <div class="container">
+    <p class="section-label reveal">// Credentials</p>
+    <h2 class="section-title reveal">Certifications</h2>
+    <div class="certs-list">
+      <div class="cert-badge reveal">
+        <div class="cert-badge-icon">⚠️</div>
+        <div class="cert-badge-text">OSHA HAZMAT Hazardous Materials Handling</div>
+      </div>
+      <div class="cert-badge reveal">
+        <div class="cert-badge-icon">⚡</div>
+        <div class="cert-badge-text">Electric Pallet Jack Certification</div>
+      </div>
+      <div class="cert-badge reveal">
+        <div class="cert-badge-icon">🚗</div>
+        <div class="cert-badge-text">Valid Driver's License</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="container">
+    <p class="section-label reveal">// Let's Connect</p>
+    <h2 class="section-title reveal">Get in Touch</h2>
+    <div class="contact-inner">
+      <p class="reveal">I'm actively looking for internships and co-op opportunities in robotics and computer science. Whether you have a question or just want to say hi, feel free to reach out!</p>
+      <div class="contact-links reveal">
+        <a href="mailto:hudsonbombard@Gmail.com" class="contact-link">
+          <span>✉</span> hudsonbombard@gmail.com
+        </a>
+        <a href="tel:9788702070" class="contact-link">
+          <span>📞</span> 978-870-2070
+        </a>
+        <a href="https://github.com/Feilwinter" target="_blank" rel="noopener" class="contact-link">
+          <span>⌥</span> github.com/Feilwinter
+        </a>
+        <a href="#" class="contact-link">
+          <span>📍</span> Baldwinville, MA
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Hudson Bombard. Built with purpose.</p>
+  <a href="https://github.com/Feilwinter" target="_blank" rel="noopener" style="font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--muted);text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">github.com/Feilwinter</a>
+  <p>Authorized to work in the U.S.</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
